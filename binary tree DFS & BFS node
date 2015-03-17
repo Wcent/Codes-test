@@ -1,0 +1,543 @@
+// binary tree node class ~ Node.h
+class CNode
+{
+private:
+	int m_nodeValue;
+	CNode *m_leftSubNode;
+	CNode *m_rightSubNode;
+	
+public:
+	CNode(void);
+	CNode(int nodeValue);
+	CNode(CNode &node);
+	virtual ~CNode(void);
+	CNode & operator =(int nodeValue);
+	CNode & operator =(CNode &node);
+	void setNodeValue(int value);
+	int getNodeValue();
+	void setLeftSubNode(CNode *node);
+	void setRightSubNode(CNode *node);
+	CNode * getLeftSubNode();
+	CNode * getRightSubNode();
+	void clear();
+};
+
+// binary tree node class ~ cpp
+#include "Node.h"
+
+CNode::CNode(void)
+{
+	m_nodeValue = 0;
+	m_leftSubNode = NULL;
+	m_rightSubNode = NULL;
+}
+
+
+CNode::CNode(int nodeValue)
+{
+	m_nodeValue = nodeValue;
+	m_leftSubNode = NULL;
+	m_rightSubNode = NULL;
+}
+
+CNode::CNode(CNode &node)
+{
+	m_nodeValue = node.getNodeValue();
+	m_leftSubNode = node.getLeftSubNode();
+	m_rightSubNode = node.getRightSubNode();
+}
+
+CNode::~CNode(void)
+{
+	clear();
+}
+
+CNode & CNode::operator =(int nodeValue)
+{
+	m_nodeValue = nodeValue;
+	m_leftSubNode = NULL;
+	m_rightSubNode = NULL;
+	return (*this);
+}
+
+CNode & CNode::operator =(CNode &node)
+{
+	m_nodeValue = node.getNodeValue();
+	m_leftSubNode = node.getLeftSubNode();
+	m_rightSubNode = node.getRightSubNode();
+	return (*this);
+}
+
+void CNode::setNodeValue(int nodeValue)
+{
+	m_nodeValue = nodeValue;
+}
+
+int CNode::getNodeValue()
+{
+	return m_nodeValue;
+}
+
+void CNode::setLeftSubNode(CNode *node)
+{
+	m_leftSubNode = node;
+}
+
+void CNode::setRightSubNode(CNode *node)
+{
+	m_rightSubNode = node;
+}
+
+CNode * CNode::getLeftSubNode()
+{
+	return m_leftSubNode;
+}
+
+CNode * CNode::getRightSubNode()
+{
+	return m_rightSubNode;
+}
+
+void CNode::clear()
+{
+	m_nodeValue = 0;
+	m_leftSubNode = NULL;
+	m_rightSubNode = NULL;
+}
+
+
+// binary tree class ~ BinTree.h
+#include "Node.h"
+
+class CBinTree
+{
+private:
+	CNode *bTree;
+	static int numOfNodes;
+	
+private:
+	void setRootNode(CNode *newRoot);
+	
+public:
+	CBinTree(void);
+//	CBinTree(const int *nodeValueArray);
+	CBinTree(CNode *nodeArray, int len);
+	virtual ~CBinTree(void);
+	void output();
+	CNode * getRootNode();
+	int getNumOfNodes();
+//	CNode * getNodeParent(CBinTree &binTree, const CNode &keyNode) const
+	CNode * getNodeParent(CNode *root, CNode &keyNode);
+//	bool insertNode(CNode &nodeKey, bool flag, int nodeValue);
+	bool insertNode(CNode &keyNode, bool flag, CNode *newNode);
+//	bool deleteNode(int nodeValue);
+	bool deleteNode(CNode &keyNode);
+//	bool nodeIsExist(int nodeValue);
+	bool nodeIsExist(CNode &keyNode);
+//	bool DFS_node(int nodeValue);
+	CNode * DFS_node(CNode &keyNode);
+//	bool BFS_node(int nodeValue);
+	CNode * BFS_node(CNode &keyNode);
+	void clear();
+};
+
+// binary tree class ~ cpp
+#include "BinTree.h"
+#include <iostream>
+
+using namespace std;
+
+int CBinTree::numOfNodes = 0;
+
+CBinTree::CBinTree(void)
+{
+	bTree = NULL;
+}
+
+CBinTree::CBinTree(CNode *nodeArray, int len)
+{
+	int root;
+	int left, right;
+	CNode *node;
+	
+	for (int i=len-1; i>0; i--)
+	{
+		node = new CNode(nodeArray[i]);
+		root = (i - 1) / 2;
+		left = 2 * root + 1;
+		right = 2 * root + 2;
+		if (i == left)
+			nodeArray[root].setLeftSubNode(node);
+		else if (i == right)
+			nodeArray[root].setRightSubNode(node);
+		else
+			delete [] node;
+	}
+	bTree = new CNode(nodeArray[0]);
+	numOfNodes = len;
+}
+
+void CBinTree::output()
+{
+	int head, tail;
+	CNode **queue;
+	CNode *node;
+	
+	if (bTree == NULL)
+		return ;
+		
+	queue = new CNode *[numOfNodes];
+	head = tail = 0;
+	queue[tail++] = bTree;
+	while (head < tail)
+	{
+		node = queue[head++];
+		cout<<node->getNodeValue()<<' ';
+		if (node->getLeftSubNode() != NULL)
+			queue[tail++] = node->getLeftSubNode();
+		if (node->getRightSubNode() != NULL)
+			queue[tail++] = node->getRightSubNode();
+	}
+	cout<<endl;
+	delete [] queue;
+}
+
+CNode * CBinTree::getRootNode()
+{
+	return bTree;
+}
+
+void CBinTree::setRootNode(CNode *newRoot)
+{
+	bTree = newRoot;
+}
+
+int CBinTree::getNumOfNodes()
+{
+	return numOfNodes;
+}
+/*
+CNode * CBinTree::getNodeParent(CBinTree &binTree, const CNode &keyNode) const
+{
+	CNode *root = binTree.getRootNode();
+	if (root == NULL)
+		return NULL;
+		
+	if (root == &keyNode)
+		return NULL;
+		
+	CNode *left = root->getLeftSubNode();
+	CNode *right = root->getRightSubNode();
+	if (left == &keyNode || right == &keyNode)
+		return root;
+	
+	if (left != NULL)
+	{
+		setRootNode(left);
+		CNode *parent = getNodeParent(binTree, keyNode);
+		setRootNode(root);
+		if (parent != NULL)
+			return parent;
+	}
+	if (right != NULL)
+	{
+		setRootNode(right);
+		CNode *parent = getNodeParent(binTree, keyNode);
+		setRootNode(root);
+		return parent;
+	}
+	return NULL;
+}
+*/
+CNode * CBinTree::getNodeParent(CNode *root, CNode &keyNode)
+{
+	CNode *left = root->getLeftSubNode();
+	CNode *right = root->getRightSubNode();
+	
+	if (root->getNodeValue() == keyNode.getNodeValue())
+		return NULL;
+	else if (left->getNodeValue() == keyNode.getNodeValue() || 
+		right->getNodeValue() == keyNode.getNodeValue())
+		return root;
+	if (left != NULL)
+	{
+		root = getNodeParent(left, keyNode);
+		if (root != NULL)
+			return root;
+	}
+	if (right != NULL)
+	{
+		root = getNodeParent(right, keyNode);
+		if (root != NULL)
+			return root;
+	}
+	return NULL;	
+}
+
+bool CBinTree::insertNode(CNode &keyNode, bool flag, CNode *newNode)
+{
+	CNode *node = BFS_node(keyNode);
+	if (node == NULL)
+		return false;
+	
+	CNode *nNode = new CNode(*newNode);
+	if (flag == true)
+	{
+		CNode *left = node->getLeftSubNode();
+		node->setLeftSubNode(nNode);
+		nNode->setLeftSubNode(left);
+	}
+	else
+	{
+		CNode *right = node->getRightSubNode();
+		node->setRightSubNode(nNode);
+		nNode->setRightSubNode(right);
+	}
+	numOfNodes++;
+	return true;
+}
+
+bool CBinTree::deleteNode(CNode &keyNode)
+{
+	CNode *node = BFS_node(keyNode);
+	if (node != NULL)
+	{
+		CNode *parent = getNodeParent(bTree, keyNode);
+		if (parent != NULL)
+		{
+			CNode *left = parent->getLeftSubNode();
+			CNode *right = parent->getRightSubNode();
+			
+			if (left == node && node->getLeftSubNode() == NULL)
+				parent->setLeftSubNode(node->getRightSubNode());
+			else if (left == node && node->getRightSubNode() == NULL)
+				parent->setLeftSubNode(node->getLeftSubNode());
+			else if (right == node && node->getLeftSubNode() == NULL)
+				parent->setRightSubNode(node->getRightSubNode());
+			else if (right == node && node->getRightSubNode() == NULL)
+				parent->setRightSubNode(node->getLeftSubNode());
+			else
+			{
+				if (left == node)
+					parent->setLeftSubNode(node->getLeftSubNode());
+				else if (right == node)
+					parent->setRightSubNode(node->getLeftSubNode());
+			
+				parent = node->getLeftSubNode();
+				right = parent->getRightSubNode();
+				while (right != NULL)
+				{
+					parent = right;
+					right = parent->getRightSubNode();
+				}
+				parent->setRightSubNode(node->getRightSubNode());
+			}
+			delete [] node;
+		}
+		else
+		{
+			delete [] node;
+			bTree = NULL;
+		}
+		numOfNodes--;
+		return true;
+	}
+	else
+		return false;
+}
+
+bool CBinTree::nodeIsExist(CNode &keyNode)
+{
+	return (DFS_node(keyNode) != NULL);
+//	return (BFS_node(keyNode) != NULL;
+}
+
+// DFS - binary tree
+CNode * CBinTree::DFS_node(CNode &keyNode)
+{
+	int top, bottom;
+	CNode **stack;
+	CNode *node;
+	CNode *preNode;
+	CNode *left, *right;
+
+	if (bTree == NULL)
+		return NULL;
+		
+	stack = new CNode *[numOfNodes];
+	top = bottom = 0;
+	if (bTree->getNodeValue() == keyNode.getNodeValue())
+	{
+		delete [] stack;
+		return bTree;
+	}
+	stack[top++] = bTree;
+	preNode = NULL;
+	
+	while (top > bottom)
+	{
+		node = stack[top-1];
+		left = node->getLeftSubNode();
+		right = node->getRightSubNode();
+		
+		if (left != NULL && right != NULL)
+		{
+			if (left != preNode && right != preNode)
+			{
+				if (left->getNodeValue() == keyNode.getNodeValue())
+				{
+					delete [] stack;
+					return left;
+				}
+				stack[top++] = left;
+			}
+			else if (left == preNode && right != preNode)
+			{
+				if (right->getNodeValue() == keyNode.getNodeValue())
+				{
+					delete [] stack;
+					return right;
+				}
+				stack[top++] = right;
+			}
+			else if (right == preNode)
+				preNode = stack[--top];
+		}
+		else if (left != NULL && right == NULL)
+		{
+			if (left != preNode)
+			{
+				if (left->getNodeValue() == keyNode.getNodeValue())
+				{
+					delete [] stack;
+					return left;
+				}
+				stack[top++] = left;
+			}
+			else
+				preNode = stack[--top];
+		}
+		else if (left == NULL && right != NULL)
+		{
+			if (right != preNode)
+			{
+				if (right->getNodeValue() == keyNode.getNodeValue())
+				{
+					delete [] stack;
+					return right;
+				}
+				stack[top++] = right;
+			}
+			else
+				preNode = stack[--top];
+		}
+		else
+			preNode = stack[--top];
+	}
+	delete [] stack;
+	return NULL;
+}
+
+// BFS - binary tree
+CNode * CBinTree::BFS_node(CNode &keyNode)
+{
+	int head, tail;
+	CNode **queue;
+	CNode *node;
+	
+	if (bTree == NULL)
+		return NULL;
+		
+	queue = new CNode *[numOfNodes];
+	head = tail = 0;
+	queue[tail++] = bTree;
+	while (head < tail)
+	{
+		node = queue[head++];
+		if (node->getNodeValue() == keyNode.getNodeValue())
+		{
+			delete [] queue;
+			return node;
+		}
+		if (node->getLeftSubNode() != NULL)
+			queue[tail++] = node->getLeftSubNode();
+		if (node->getRightSubNode() != NULL)
+			queue[tail++] = node->getRightSubNode();
+	}
+	delete [] queue;
+	return NULL;
+}
+
+CBinTree::~CBinTree(void)
+{
+	clear();
+}
+
+void CBinTree::clear()
+{
+	if (bTree->getLeftSubNode() != NULL)
+		bTree->getLeftSubNode()->clear();
+	if (bTree->getRightSubNode() != NULL)
+		bTree->getRightSubNode()->clear();
+	delete [] bTree;
+	bTree = NULL;
+	numOfNodes = 0;
+}
+
+#include "Node.h"
+#include "BinTree.h"
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+	CNode nodeArray[10] = {3, 2, 4, 6, 1, 9, 5, 8, 0, 7};
+	CBinTree binTree(nodeArray, 10);
+	cout<<"nodes array: ";
+	for (int i=0; i<10; i++)
+		cout<<nodeArray[i].getNodeValue()<<' ';
+	cout<<endl;
+
+	cout<<"binary tree: ";
+	binTree.output();
+
+	
+	bool flag = binTree.nodeIsExist(CNode(1));
+	cout<<"is node(1) exist?: "<<(flag?"Yes,":"No");
+	if (flag)
+		cout<<" with value: "<<binTree.BFS_node(CNode(1))->getNodeValue()<<endl;
+
+	flag = binTree.deleteNode(CNode(1));
+	cout<<(flag?"after delete node(1): ":"delete faile")<<endl;
+	binTree.output();
+
+	flag = binTree.insertNode(CNode(2), false, &CNode(1));
+	cout<<(flag?"after insert node(1): ":"insert faile")<<endl;
+	binTree.output();
+
+	flag = binTree.nodeIsExist(CNode(1));
+	cout<<"is node(1) exist?: "<<(flag?"Yes,":"No");
+	if (flag)
+		cout<<" with value: "<<binTree.BFS_node(CNode(1))->getNodeValue();
+	cout<<endl;
+
+	flag = binTree.insertNode(CNode(4), false, &CNode(11));
+	cout<<(flag?"after insert node(1): ":"insert faile")<<endl;
+	binTree.output();
+
+	flag = binTree.insertNode(CNode(4), true, &CNode(10));
+	cout<<(flag?"after insert node(10): ":"insert faile")<<endl;
+	binTree.output();
+
+	flag = binTree.nodeIsExist(CNode(10));
+	cout<<"is node(10) exist?: "<<(flag?"Yes,":"No");
+	if (flag)
+		cout<<" with value: "<<binTree.DFS_node(CNode(10))->getNodeValue();
+	cout<<endl;
+
+	return 0;
+}
+
+
+
