@@ -79,7 +79,6 @@ int _tmain(int argc, _TCHAR* argv[])
 
 // ~huffman coding
 // ~
-
 CNode * huffmanCoding(CNode *p, int len)
 {
 	int min, secMin;
@@ -97,7 +96,7 @@ CNode * huffmanCoding(CNode *p, int len)
 		{
 			if(p[i].flag == true)
 				continue;
-			// 发现更小的权值，当前变次小，当前换更小，记录下标+权值
+			// 发现更小的权值，当前最小变次小，更新最小，记录下标+权值
 			if(m == -1 || min > p[i].weight)
 			{
 				sm = m;
@@ -105,7 +104,7 @@ CNode * huffmanCoding(CNode *p, int len)
 				m = i;
 				min = p[i].weight;
 			}
-			// 最小不变时，检测是否换次小，换次小同样记录下标+权值
+			// 最小不变时，检测是否更新次小，换次小同样记录下标+权值
 			else if(secMin == -1 || secMin > p[i].weight)
 			{
 				sm = i;
